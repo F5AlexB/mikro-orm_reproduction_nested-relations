@@ -62,7 +62,40 @@ afterAll(async () => {
   await orm.close(true);
 });
 
-test('query implosion 1', async () => {
+/**
+ * This queries using a $none as part of an AND statement.
+ * A query is generated here, but the query is invalid.
+ */
+test('Query using $none as part of AND statement', async () => {
+  const standalone2Repo = orm.em.getRepository(StandaloneEntityTwo);
+
+  await standalone2Repo.find({
+    $and: [
+      {
+        someBooleanFlag: true,
+      },
+      {
+        name: { $like: '%asdf%' }
+      },
+      {
+        listOfMiddleEntitites: {
+          $none: {
+            standalone1: {
+              id: 1,
+            },
+            arbitraryData: { $ne: null },
+          }
+        }
+      }
+    ],
+  });
+});
+
+/**
+ * This queries using a $none.
+ * This fails to even create the query - there is an error during query building.
+ */
+test('Query using $none at top level of query.', async () => {
   const standalone2Repo = orm.em.getRepository(StandaloneEntityTwo);
 
   await standalone2Repo.find({
@@ -85,7 +118,11 @@ test('query implosion 1', async () => {
   })
 });
 
-test('query implosion 2', async () => {
+/**
+ * This queries using a $not->$some combination (instead of $none).
+ * This fails to even create the query - there is an error during query building.
+ */
+test('Query using $not->$some at top level of query.', async () => {
   const standalone2Repo = orm.em.getRepository(StandaloneEntityTwo);
 
   await standalone2Repo.find({
@@ -94,7 +131,7 @@ test('query implosion 2', async () => {
         someBooleanFlag: true,
       },
       {
-        name: { $ilike: '%%' }
+        name: { $like: '%asdf%' }
       },
     ],
     $not: {
