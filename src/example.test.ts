@@ -34,10 +34,19 @@ class StandaloneEntityTwo {
 
 @Entity()
 class AnEntityInTheMiddle {
-  @ManyToOne({ entity: () => StandaloneEntityOne, primary: true, ref: true })
+  @ManyToOne({ 
+    entity: () => StandaloneEntityOne, 
+    primary: true, 
+    ref: true 
+  })
   standalone1!: Ref<StandaloneEntityOne>;
 
-  @ManyToOne({ entity: () => StandaloneEntityTwo, primary: true, ref: true })
+  @ManyToOne({ 
+    entity: () => StandaloneEntityTwo, 
+    primary: true, 
+    ref: true, 
+    inversedBy: (e) => e.listOfMiddleEntitites 
+  })
   standalone2!: Ref<StandaloneEntityTwo>;
 
   [PrimaryKeyProp]?: ['standalone1', 'standalone2']
@@ -93,7 +102,7 @@ test('Query using $none as part of AND statement', async () => {
 
 /**
  * This queries using a $none.
- * This fails to even create the query - there is an error during query building.
+ * This creates the query but the query is not valid.
  */
 test('Query using $none at top level of query.', async () => {
   const standalone2Repo = orm.em.getRepository(StandaloneEntityTwo);
